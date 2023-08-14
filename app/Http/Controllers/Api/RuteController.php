@@ -84,18 +84,6 @@ class RuteController extends Controller
 
         return $rute;
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Rute  $rute
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Rute $rute)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      *
@@ -105,7 +93,24 @@ class RuteController extends Controller
      */
     public function update(Request $request, Rute $rute)
     {
-        //
+        $request->validate([
+            'asal' => 'required',
+            'tujuan' => 'required',
+            'kode' => 'required',
+            'waktu_tempuh' => 'required',
+            'checkpoints' => 'required|array'
+        ]);
+
+        $rute->asal = $request->asal;
+        $rute->tujuan = $request->tujuan;
+        $rute->kode = $request->kode;
+        $rute->waktu_tempuh = $request->waktu_tempuh;
+        $rute->checkpoints = json_encode($request->checkpoints);
+        $rute->save();
+
+        return response()->json(['message' => 'data updated']);
+
+
     }
 
     /**
@@ -116,6 +121,7 @@ class RuteController extends Controller
      */
     public function destroy(Rute $rute)
     {
-        //
+        $rute->delete();
+        return response()->json(['message' => 'rute deleted']);
     }
 }

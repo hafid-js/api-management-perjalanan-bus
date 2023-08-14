@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Rute;
+use App\Models\Terminal;
 use Illuminate\Http\Request;
 
 class RuteController extends Controller
@@ -15,7 +16,14 @@ class RuteController extends Controller
      */
     public function index()
     {
-        //
+        $rutes = Rute::select([
+            'id',
+            'kode',
+            'asal',
+            'tujuan',
+            'waktu_tempuh'
+        ])->paginate(15);
+        return response()->json($rutes);
     }
 
     /**
@@ -31,7 +39,7 @@ class RuteController extends Controller
             'asal' => 'required',
             'tujuan' => 'required',
             'kode' => 'required',
-            'waktu_tujuan' => 'required',
+            'waktu_tempuh' => 'required',
             'checkpoints' => 'required|array'
         ]);
         $rute = Rute::create([
@@ -41,6 +49,17 @@ class RuteController extends Controller
             'waktu_tempuh' => $request->waktu_tempuh,
             'checkpoints' => json_encode($request->checkpoints)
         ]);
+
+        $rute->checkpoints = json_decode($rute->checkpoints, true);
+
+        $terminals = Terminal::whereIn('id', array_column($rute->checkpoints, "id"))
+            ->select('id', 'kode', 'nama', 'alamat', 'tipe')
+            ->get();
+
+        $rute->checkpoints = array_map(function ($item) use ($terminals) {
+            $item['terminal'] = $terminals->where('id', $item['id'])->first();
+            return $item;
+        }, $rute->checkpoints);
 
         return response()->json($rute);
     }
@@ -53,7 +72,17 @@ class RuteController extends Controller
      */
     public function show(Rute $rute)
     {
-        //
+        $rute->checkpoints = json_decode($rute->checkpoints, true);
+        $terminals = Terminal::whereIn('id', array_column($rute->checkpoints, "id"))
+            ->select('id', 'kode', 'nama', 'alamat', 'tipe')
+            ->get();
+
+        $rute->checkpoints = array_map(function ($item) use ($terminals) {
+            $item['terminal'] = $terminals->where('id', $item['id'])->first();
+            return $item;
+        }, $rute->checkpoints);
+
+        return $rute;
     }
 
     /**

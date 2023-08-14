@@ -8,4 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class Rute extends Model
 {
     use HasFactory;
+    public $fillable = ['kode','asal','tujuan','waktu_tempuh','checkpoints'];
 }

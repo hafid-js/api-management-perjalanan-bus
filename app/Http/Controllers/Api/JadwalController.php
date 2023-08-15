@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Jadwal;
+use App\Models\Rute;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class JadwalController extends Controller
@@ -29,14 +31,26 @@ class JadwalController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'bus_id' => 'required|exists:buses',
-            'supir_id' => 'required|exists:supirs',
-            'rute_id' => 'required|exists:rutes',
+            'bus_id' => 'required|exists:buses,id',
+            'supir_id' => 'required|exists:supirs,id',
+            'rute_id' => 'required|exists:rutes,id',
             'berangkat' => 'required'
         ]);
 
+        $rute = Rute::find($request->rute_id);
+        $berangkat = (new Carbon($request->berangkat))->toImmutable()->setTimezone('Asia/Jakarta');
+        $tiba = $berangkat->addMinutes($rute->waktu_tempuh);
 
+        $jadwal = Jadwal::create([
+            'bus_id' => $request->bus_id,
+            'supir_id' => $request->supir_id,
+            'rute_id' => $request->rute_id,
+            'berangkat' => $berangkat,
+            'tiba' => $tiba,
+            'status' => Jadwal::NGY
+        ]);
 
+        return response()->json(['data' => $jadwal]);
     }
 
     /**
@@ -45,9 +59,9 @@ class JadwalController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Jadwal $jadwal)
     {
-        //
+        return response()->json(['data' => $jadwal]);
     }
 
     /**
@@ -57,9 +71,32 @@ class JadwalController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Jadwal $jadwal)
     {
-        //
+        $request->validate([
+            'bus_id' => 'required|exists:buses,id',
+            'supir_id' => 'required|exists:supirs,id',
+            'rute_id' => 'required|exists:rutes,id',
+            'berangkat' => 'required'
+        ]);
+
+        $rute = Rute::find($request->rute_id);
+        $berangkat = (new Carbon($request->berangkat))->toImmutable()->setTimezone('Asia/Jakarta');
+        $tiba = $berangkat->addMinutes($rute->waktu_tempuh);
+
+
+        $jadwal->bus_id = $request->bus_id;
+        $jadwal->supir_id = $request->supir_id;
+        $jadwal->rute_id = $request->rute_id;
+        $jadwal->berangkat = $berangkat;
+        $jadwal->tiba = $tiba;
+
+
+        $jadwal->save();
+
+        return response()->json($jadwal);
+
+
     }
 
     /**
@@ -68,8 +105,9 @@ class JadwalController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Jadwal $jadwal)
     {
-        //
+        $jadwal->delete();
+        return response()->json(['message' => 'jadwal deleted']);
     }
 }

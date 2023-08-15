@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\BusController;
+use App\Http\Controllers\Api\JadwalController;
 use App\Http\Controllers\Api\RuteController;
 use App\Http\Controllers\Api\SupirController;
 use App\Http\Controllers\Api\TerminalController;
@@ -32,3 +33,5 @@ Route::apiResource('supirs', SupirController::class);
 Route::apiResource('terminals', TerminalController::class);
 
 Route::apiResource('rutes', RuteController::class);
+
+Route::apiResource('jadwals', JadwalController::class);
